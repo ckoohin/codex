@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $t) {
             $t->id();
-            $t->foreignId('user_id')->constrained()->cascadeOnDelete()->index();
+            $t->unsignedBigInteger('user_id');
+            $t->index('user_id');
             $t->string('action');
             $t->json('payload_json')->nullable();
             $t->timestamp('created_at')->useCurrent();
+            $t->foreign('user_id', 'fk_audit_logs_user')
+              ->references('id')->on('users')
+              ->cascadeOnDelete();
           });
     }
 

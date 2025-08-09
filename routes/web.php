@@ -28,11 +28,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/recommendations/{survey}', [RecommendationController::class,'show'])->name('recommendations.show');
   });
   
-  Route::middleware(['auth','can:admin'])
-    ->prefix('admin')->name('admin.')
-    ->group(function () {
-      Route::resource('majors', Admin\MajorController::class);
-      Route::resource('questions', Admin\QuestionController::class);
-      Route::resource('subjects', Admin\SubjectController::class);
-  });
+  // Route::middleware(['auth','can:admin'])
+  //   ->prefix('admin')->name('admin.')
+  //   ->group(function () {
+  //     Route::resource('majors', Admin\MajorController::class);
+  //     Route::resource('questions', Admin\QuestionController::class);
+  //     Route::resource('subjects', Admin\SubjectController::class);
+  // });
 require __DIR__.'/auth.php';

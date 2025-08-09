@@ -12,6 +12,14 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container">
     <a class="navbar-brand" href="/">CodeX Advisor</a>
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      @auth
+      <li class="nav-item"><a class="nav-link" href="{{ route('survey.index') }}">Khảo sát</a></li>
+      @can('admin')
+      <li class="nav-item"><a class="nav-link" href="{{ route('admin.majors.index') }}">Quản lý ngành</a></li>
+      @endcan
+      @endauth
+    </ul>
     <div class="d-flex">
       @auth
         <span class="navbar-text me-3">{{ auth()->user()->name }}</span>

@@ -15,11 +15,15 @@
         <div class="card p-3">
           <h2 class="h5 mb-2">Ngành gợi ý hàng đầu</h2>
           <ul class="list-group list-group-flush">
-          @forelse(($topMajors ?? []) as $m)
+          @php
+            // Ưu tiên dùng dữ liệu đã map và lưu trong DB nếu có
+            $displayMajors = $topMajors ?? ($rec->top_major_ids_json ?? []);
+          @endphp
+          @forelse($displayMajors as $m)
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <div>
-                <div class="fw-semibold">{{ $m['name'] }}</div>
-                <div class="small text-muted">Mã: {{ $m['code'] }}</div>
+                <div class="fw-semibold">{{ $m['name'] ?? ($m['code'] ?? 'N/A') }}</div>
+                @if(!empty($m['code']))<div class="small text-muted">Mã: {{ $m['code'] }}</div>@endif
               </div>
               @if(!empty($m['score']))<span class="badge bg-primary">{{ $m['score'] }}%</span>@endif
             </li>

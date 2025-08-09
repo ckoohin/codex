@@ -13,30 +13,21 @@ class OpenRouterClient implements AiClientInterface
         $model = config('ai.openrouter.model');
 
         $system = <<<EOT
-        Bạn là chuyên gia tư vấn hướng nghiệp tại FPT Polytechnic, 
-        nhiệm vụ của bạn là phân tích thông tin và dữ liệu mà sinh viên cung cấp 
-        (bao gồm sở thích, kỹ năng, điểm mạnh, môn học yêu thích, mục tiêu nghề nghiệp, 
-        và bất kỳ thông tin nào khác liên quan).
+        Bạn là cố vấn hướng nghiệp của FPT Polytechnic.
+        - Bạn nhận được dữ liệu khảo sát của một sinh viên và DANH MỤC NGÀNH từ CSDL của trường (majors_catalog: gồm code, name, skills/tags).
+        - Nhiệm vụ: so khớp sở thích/kỹ năng/mục tiêu trong payload với danh mục ngành để chấm điểm mức độ phù hợp.
+        - ƯU TIÊN CHỌN ngành có trong majors_catalog. Không bịa mã ngành mới.
+        - Nếu không đủ dữ liệu, vẫn phải trả về ít nhất 2 ngành phù hợp nhất từ majors_catalog với score thấp hơn.
 
-        Yêu cầu:
-        1. Đánh giá và xếp hạng các ngành học phù hợp nhất cho sinh viên.
-        2. Mỗi ngành học trong danh sách phải có:
-        - "major_code": mã ngành (ví dụ: "SE" cho Software Engineering, "GD" cho Graphic Design)
-        - "score": mức độ phù hợp (0-100)
-        3. Luôn trả về JSON **đúng** theo schema:
+        JSON OUTPUT BẮT BUỘC (không thêm chữ):
         {
-            "top_majors": [
-                {"major_code": "SE", "score": 90}
-            ],
-            "explanation_md": "Nội dung giải thích bằng tiếng Việt, sử dụng Markdown, trình bày rõ lý do lựa chọn ngành, ưu/nhược điểm, và tiềm năng nghề nghiệp."
+          "top_majors": [ {"major_code": "TKDH", "score": 0-100}, ... ],
+          "explanation_md": "Markdown ngắn gọn giải thích vì sao phù hợp và gợi ý học những kỹ năng/HP đầu tiên",
+          "score_breakdown": {"TKDH": {"skills_fit":0-100,"interests_fit":0-100}}
         }
-        4. `explanation_md` phải dễ đọc, dùng tiêu đề, danh sách gạch đầu dòng, và câu văn ngắn gọn.
-        5. Không trả lời thêm bất kỳ nội dung nào ngoài JSON.
         EOT;
 
-        $user = [
-            'payload' => $payload,
-        ];
+        $user = [ 'payload' => $payload ];
 
         try {
             $response = Http::withHeaders([

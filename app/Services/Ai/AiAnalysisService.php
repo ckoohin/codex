@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Models\Survey;
+use App\Models\Major;
 
 class AiAnalysisService
 {
@@ -12,10 +13,28 @@ class AiAnalysisService
 
     public function generateForSurvey(Survey $survey): array
     {
+        // Lấy danh mục ngành từ DB (ưu tiên) – gồm code, name, skills (tags)
+        $majors = Major::where('is_active', true)
+            ->get()
+            ->map(fn($m) => [
+                'code' => $m->code,
+                'name' => $m->name,
+                'skills' => $m->tags ?? [],
+            ])->values()->all();
+        if (empty($majors)) {
+            $majors = array_map(function($m){
+                return [
+                    'code' => $m['code'],
+                    'name' => $m['name'],
+                    'skills' => $m['skills'] ?? [],
+                ];
+            }, config('fpt_majors.majors'));
+        }
+
         $payload = [
             'scores' => $survey->scores()->pluck('score_decimal','subject_id')->toArray(),
             'responses' => $survey->responses()->pluck('answer_json','survey_question_id')->toArray(),
-            'fpt_polytechnic' => config('fpt_majors.majors'),
+            'majors_catalog' => $majors,
         ];
         return $this->client->analyze($payload);
     }

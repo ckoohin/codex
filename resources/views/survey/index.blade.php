@@ -3,9 +3,6 @@
 @section('content')
     <style>
         :root {
-            --codex-primary: #0b3b5a;
-            --codex-bg: #0a2740;
-            --codex-accent: #1f6fb2;
             --bg: #f4f7fb;
             --card: #ffffff;
             --accent: #4f46e5;
@@ -129,142 +126,87 @@
             color: var(--muted);
             margin-top: 6px
         }
-
-        .sv-hero {
-            background: linear-gradient(135deg, var(--codex-bg), var(--codex-primary));
-            color: #fff;
-            border-radius: 16px
-        }
-
-        .sv-card {
-            border: 0;
-            border-radius: 14px;
-            background: #0e3553;
-            color: #e6eef5
-        }
-
-        .sv-card .form-control,
-        .sv-card .form-select {
-            background: #0b2f4b;
-            border-color: #11476e;
-            color: #fff
-        }
-
-        .nav-pills .nav-link {
-            color: #fff;
-            background: #0e3553;
-            margin-right: 8px
-        }
-
-        .nav-pills .nav-link.active {
-            background: var(--codex-accent)
-        }
-
-        .btn-accent {
-            background: var(--codex-accent);
-            color: #fff;
-            border: none
-        }
     </style>
 
     <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="sv-hero p-4 p-md-5 mb-4">
-                <h1 class="h4 mb-2">Khảo sát tư vấn chọn ngành</h1>
-                <div class="opacity-75">Nhập điểm, sở thích, kỹ năng và định hướng. AI sẽ phân tích và gợi ý ngành phù hợp.
+        <main class="card" role="main">
+            <h1>Biểu mẫu: Sở thích & Kỹ năng</h1>
+            <p class="lead">Chọn lựa các trường dưới đây. Tất cả các ô đều dùng dạng <strong>select</strong>.</p>
+
+            <form action="{{ route('survey.post') }}" method="POST" id="profileForm">
+                @csrf
+                <div class="field full">
+                    <label for="interests">Sở thích</label>
+                    <input type="text" class="like" name="like" value="">
+                    <div class="hint">Chọn 1 giá trị mô tả sở thích chính của bạn.</div>
                 </div>
-            </div>
 
-            <main class="card" role="main">
-                <h1>Biểu mẫu: Sở thích & Kỹ năng</h1>
-                <p class="lead">Chọn lựa các trường dưới đây. Tất cả các ô đều dùng dạng <strong>select</strong>.</p>
+                <div class="field">
+                    <label for="skills">Kỹ năng</label>
+                    <select id="skills" name="skills">
+                        <option value="" disabled selected>Chọn kỹ năng</option>
+                        <option value="Lập trình">Lập trình</option>
+                        <option value="Giao tiếp">Giao tiếp</option>
+                        <option value="Thiết kế">Thiết kế</option>
+                        <option value="Quản lý dự án">Quản lý dự án</option>
+                        <option value="Phân tích dữ liệu">Phân tích dữ liệu</option>
+                    </select>
+                </div>
 
-                <form id="profileForm" onsubmit="handleSubmit(event)">
+                <div class="field">
+                    <label for="subject">Môn học yêu thích</label>
+                    <select id="subject" name="subject">
+                        <option value="" disabled selected>Chọn môn học</option>
+                        <option value="Toán">Toán</option>
+                        <option value="Vật lý">Vật lý</option>
+                        <option value="Hóa học">Hóa học</option>
+                        <option value="Ngữ văn">Ngữ văn</option>
+                        <option value="Tin học">Tin học</option>
+                        <option value="Tiếng Anh">Tiếng Anh</option>
+                    </select>
+                </div>
 
-                    <div class="field full">
-                        <label for="interests">Sở thích</label>
-                        <select id="interests" name="interests">
-                            <option value="" disabled selected>Chọn sở thích</option>
-                            <option>Âm nhạc</option>
-                            <option>Thể thao</option>
-                            <option>Đọc sách</option>
-                            <option>Du lịch</option>
-                            <option>Game</option>
-                            <option>Nấu ăn</option>
-                        </select>
-                        <div class="hint">Chọn 1 giá trị mô tả sở thích chính của bạn.</div>
-                    </div>
+                <div class="field">
+                    <label for="career">Định hướng nghề nghiệp</label>
+                    <select id="career" name="career">
+                        <option value="" disabled selected>Chọn định hướng</option>
+                        <option value="Kỹ sư phần mềm">Kỹ sư phần mềm</option>
+                        <option value="Data Scientist">Data Scientist</option>
+                        <option value="Thiết kế UX/UI">Thiết kế UX/UI</option>
+                        <option value="Giảng dạy">Giảng dạy</option>
+                        <option value="Kinh doanh / Marketing">Kinh doanh / Marketing</option>
+                        <option value="Khởi nghiệp">Khởi nghiệp</option>
+                    </select>
+                </div>
 
-                    <div class="field">
-                        <label for="skills">Kỹ năng</label>
-                        <select id="skills" name="skills">
-                            <option value="" disabled selected>Chọn kỹ năng</option>
-                            <option>Lập trình</option>
-                            <option>Giao tiếp</option>
-                            <option>Thiết kế</option>
-                            <option>Quản lý dự án</option>
-                            <option>Phân tích dữ liệu</option>
-                        </select>
-                    </div>
+                <div class="field">
+                    <label for="techLove">Mức độ yêu thích công nghệ</label>
+                    <select id="techLove" name="techLove">
+                        <option value="" disabled selected>Chọn mức độ</option>
+                        <option value="Rất yêu thích">Rất yêu thích</option>
+                        <option value="Thích">Thích</option>
+                        <option value="Bình thường">Bình thường</option>
+                        <option value="Ít quan tâm">Ít quan tâm</option>
+                        <option value="Không thích">Không thích</option>
+                    </select>
+                </div>
 
-                    <div class="field">
-                        <label for="subject">Môn học yêu thích</label>
-                        <select id="subject" name="subject">
-                            <option value="" disabled selected>Chọn môn học</option>
-                            <option>Toán</option>
-                            <option>Vật lý</option>
-                            <option>Hóa học</option>
-                            <option>Ngữ văn</option>
-                            <option>Tin học</option>
-                            <option>Tiếng Anh</option>
-                        </select>
-                    </div>
+                <div class="field">
+                    <label for="creativity">Sáng tạo</label>
+                    <select id="creativity" name="creativity">
+                        <option value="" disabled selected>Chọn mức độ</option>
+                        <option value="Rất sáng tạo">Rất sáng tạo</option>
+                        <option value="Sáng tạo">Sáng tạo</option>
+                        <option value="Trung bình">Trung bình</option>
+                        <option value="Ít sáng tạo">Ít sáng tạo</option>
+                    </select>
+                </div>
 
-                    <div class="field">
-                        <label for="career">Định hướng nghề nghiệp</label>
-                        <select id="career" name="career">
-                            <option value="" disabled selected>Chọn định hướng</option>
-                            <option>Kỹ sư phần mềm</option>
-                            <option>Data Scientist</option>
-                            <option>Thiết kế UX/UI</option>
-                            <option>Giảng dạy</option>
-                            <option>Kinh doanh / Marketing</option>
-                            <option>Khởi nghiệp</option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="techLove">Mức độ yêu thích công nghệ</label>
-                        <select id="techLove" name="techLove">
-                            <option value="" disabled selected>Chọn mức độ</option>
-                            <option>Rất yêu thích</option>
-                            <option>Thích</option>
-                            <option>Bình thường</option>
-                            <option>Ít quan tâm</option>
-                            <option>Không thích</option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="creativity">Sáng tạo</label>
-                        <select id="creativity" name="creativity">
-                            <option value="" disabled selected>Chọn mức độ</option>
-                            <option>Rất sáng tạo</option>
-                            <option>Sáng tạo</option>
-                            <option>Trung bình</option>
-                            <option>Ít sáng tạo</option>
-                        </select>
-                    </div>
-
-                    <div class="actions">
-                        <button type="button" class="btn-ghost"
-                            onclick="document.getElementById('profileForm').reset()">Đặt lại</button>
-                        <button type="submit" class="btn-primary">Gửi</button>
-                    </div>
-                </form>
-            </main>
-
-
-        </div>
+                <div class="actions">
+                    <button type="submit" class="btn-primary">Gửi</button>
+                </div>
+            </form>
+        </main>
+        <script></script>
     </div>
 @endsection

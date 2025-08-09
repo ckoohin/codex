@@ -27,10 +27,23 @@
     {id: 4, name: 'Tin học'},
   ];
 
-  const questions = [
-    {id: 101, text: 'Bạn thích lập trình hay thiết kế?', type: 'single', options: ['Lập trình','Thiết kế']},
-    {id: 102, text: 'Bạn tự đánh giá mức độ sáng tạo?', type: 'scale'},
-  ];
+  // Mẫu câu hỏi theo nhóm: interests, skills, habits, career
+  const questions = {
+    interests: [
+      {id: 201, text: 'Bạn thích lập trình hay thiết kế?', type: 'single', options: ['Lập trình','Thiết kế']},
+      {id: 202, text: 'Bạn thích làm việc với dữ liệu?', type: 'single', options: ['Có','Không']},
+    ],
+    skills: [
+      {id: 301, text: 'Tự đánh giá kỹ năng logic', type: 'scale'},
+      {id: 302, text: 'Tự đánh giá kỹ năng giao tiếp', type: 'scale'},
+    ],
+    habits: [
+      {id: 401, text: 'Bạn thường học theo nhóm hay một mình?', type: 'single', options: ['Nhóm','Một mình']},
+    ],
+    career: [
+      {id: 501, text: 'Bạn muốn làm việc trong lĩnh vực nào?', type: 'single', options: ['Phần mềm','Thiết kế','Kinh doanh','Marketing']},
+    ]
+  };
 
   // Render subjects
   const scoresList = el('scoresList');
@@ -42,23 +55,29 @@
     scoresList.appendChild(col);
   });
 
-  // Render questions
-  const questionsList = el('questionsList');
-  questions.forEach(q => {
-    const wrap = document.createElement('div');
-    wrap.className = 'card p-3';
-    if (q.type === 'single') {
-      wrap.innerHTML = `<div class="fw-bold mb-2">${q.text}</div>
-        ${q.options.map((op,i)=>`<div class="form-check">
-          <input class="form-check-input" type="radio" name="q_${q.id}" value="${op}" ${loadLS('q_'+q.id)===op?'checked':''}>
-          <label class="form-check-label">${op}</label>
-        </div>`).join('')}`
-    } else if (q.type === 'scale') {
-      wrap.innerHTML = `<label class="form-label">${q.text}</label>
-        <input type="range" min="0" max="10" step="1" class="form-range" name="q_${q.id}" value="${loadLS('q_'+q.id) || 5}">`;
-    }
-    questionsList.appendChild(wrap);
-  });
+  function renderGroup(containerId, list) {
+    const container = el(containerId);
+    list.forEach(q => {
+      const wrap = document.createElement('div');
+      wrap.className = 'p-2 border rounded';
+      if (q.type === 'single') {
+        wrap.innerHTML = `<div class="fw-bold mb-2">${q.text}</div>
+          ${q.options.map((op)=>`<div class="form-check">
+            <input class="form-check-input" type="radio" name="q_${q.id}" value="${op}" ${loadLS('q_'+q.id)===op?'checked':''}>
+            <label class="form-check-label">${op}</label>
+          </div>`).join('')}`
+      } else if (q.type === 'scale') {
+        wrap.innerHTML = `<label class="form-label">${q.text}</label>
+          <input type="range" min="0" max="10" step="1" class="form-range" name="q_${q.id}" value="${loadLS('q_'+q.id) || 5}">`;
+      }
+      container.appendChild(wrap);
+    });
+  }
+
+  renderGroup('questionsInterests', questions.interests);
+  renderGroup('questionsSkills', questions.skills);
+  renderGroup('questionsHabits', questions.habits);
+  renderGroup('questionsCareer', questions.career);
 
   function saveLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
   function loadLS(key){ try { return JSON.parse(localStorage.getItem(key)); } catch{ return null } }
@@ -70,7 +89,7 @@
   });
 
   el('saveResponses').addEventListener('click', ()=>{
-    questions.forEach(q=>{
+    Object.values(questions).flat().forEach(q=>{
       const val = q.type==='single' ? (document.querySelector(`input[name="q_${q.id}"]:checked`)?.value||'') : document.querySelector(`[name="q_${q.id}"]`)?.value;
       saveLS('q_'+q.id, val);
     });

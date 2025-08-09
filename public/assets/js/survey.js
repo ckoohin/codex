@@ -20,30 +20,8 @@
   const responsesForm = el('responsesForm');
   if (!scoresForm || !responsesForm) return;
 
-  const subjects = [
-    {id: 1, name: 'Toán'},
-    {id: 2, name: 'Văn'},
-    {id: 3, name: 'Anh'},
-    {id: 4, name: 'Tin học'},
-  ];
-
-  // Mẫu câu hỏi theo nhóm: interests, skills, habits, career
-  const questions = {
-    interests: [
-      {id: 201, text: 'Bạn thích lập trình hay thiết kế?', type: 'single', options: ['Lập trình','Thiết kế']},
-      {id: 202, text: 'Bạn thích làm việc với dữ liệu?', type: 'single', options: ['Có','Không']},
-    ],
-    skills: [
-      {id: 301, text: 'Tự đánh giá kỹ năng logic', type: 'scale'},
-      {id: 302, text: 'Tự đánh giá kỹ năng giao tiếp', type: 'scale'},
-    ],
-    habits: [
-      {id: 401, text: 'Bạn thường học theo nhóm hay một mình?', type: 'single', options: ['Nhóm','Một mình']},
-    ],
-    career: [
-      {id: 501, text: 'Bạn muốn làm việc trong lĩnh vực nào?', type: 'single', options: ['Phần mềm','Thiết kế','Kinh doanh','Marketing']},
-    ]
-  };
+  // Lấy dữ liệu từ DOM (server render) thay vì dữ liệu mẫu
+  const subjects = Array.from(document.querySelectorAll('.score-input')).map(inp => ({id: +inp.dataset.subjectId}));
 
   // Render subjects
   const scoresList = el('scoresList');
@@ -51,60 +29,50 @@
     const col = document.createElement('div');
     col.className = 'col-6 col-md-3';
     col.innerHTML = `<label class="form-label">${s.name}</label>
-      <input type="number" min="0" max="10" step="0.1" class="form-control" data-subject-id="${s.id}" value="${loadLS('score_'+s.id) || ''}">`;
+      <input type="number" min="0" max="10" step="0.1" class="form-control" data-subject-id="${s.id}" value="${loadLS('score_'+s.id) || ''}" placeholder="0-10">`;
     scoresList.appendChild(col);
   });
 
-  function renderGroup(containerId, list) {
-    const container = el(containerId);
-    list.forEach(q => {
-      const wrap = document.createElement('div');
-      wrap.className = 'p-2 border rounded';
-      if (q.type === 'single') {
-        wrap.innerHTML = `<div class="fw-bold mb-2">${q.text}</div>
-          ${q.options.map((op)=>`<div class="form-check">
-            <input class="form-check-input" type="radio" name="q_${q.id}" value="${op}" ${loadLS('q_'+q.id)===op?'checked':''}>
-            <label class="form-check-label">${op}</label>
-          </div>`).join('')}`
-      } else if (q.type === 'scale') {
-        wrap.innerHTML = `<label class="form-label">${q.text}</label>
-          <input type="range" min="0" max="10" step="1" class="form-range" name="q_${q.id}" value="${loadLS('q_'+q.id) || 5}">`;
-      }
-      container.appendChild(wrap);
-    });
-  }
-
-  renderGroup('questionsInterests', questions.interests);
-  renderGroup('questionsSkills', questions.skills);
-  renderGroup('questionsHabits', questions.habits);
-  renderGroup('questionsCareer', questions.career);
+  // Khôi phục dữ liệu đã lưu
+  document.querySelectorAll('.score-input').forEach(inp => {
+    const v = loadLS('score_'+inp.dataset.subjectId);
+    if (v !== null) inp.value = v;
+  });
+  document.querySelectorAll('.response-input').forEach(inp => {
+    const v = loadLS('q_'+inp.dataset.questionId);
+    if (v !== null) inp.value = v;
+  });
 
   function saveLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
   function loadLS(key){ try { return JSON.parse(localStorage.getItem(key)); } catch{ return null } }
 
   el('saveScores').addEventListener('click', ()=>{
-    document.querySelectorAll('[data-subject-id]').forEach(inp=>{
+    document.querySelectorAll('.score-input').forEach(inp=>{
       saveLS('score_'+inp.dataset.subjectId, inp.value || '');
     });
   });
 
   el('saveResponses').addEventListener('click', ()=>{
-    Object.values(questions).flat().forEach(q=>{
-      const val = q.type==='single' ? (document.querySelector(`input[name="q_${q.id}"]:checked`)?.value||'') : document.querySelector(`[name="q_${q.id}"]`)?.value;
-      saveLS('q_'+q.id, val);
+    document.querySelectorAll('.response-input').forEach(inp => {
+      saveLS('q_'+inp.dataset.questionId, inp.value || '');
     });
   });
 
   el('submitSurvey').addEventListener('click', async ()=>{
     try {
-      // 1. tạo survey
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/survey/submit';
-      document.body.appendChild(form);
-      const csrf = document.querySelector('input[name=_token]');
-      if (csrf) form.appendChild(csrf.cloneNode());
-      form.submit();
+      const payload = {
+        scores: {},
+        responses: {}
+      };
+      document.querySelectorAll('.score-input').forEach(inp => {
+        const v = parseFloat(inp.value);
+        if (!isNaN(v)) payload.scores[inp.dataset.subjectId] = v;
+      });
+      document.querySelectorAll('.response-input').forEach(inp => {
+        payload.responses[inp.dataset.questionId] = inp.value;
+      });
+      const res = await api.post('/survey/submit', payload);
+      if (res.redirect) location.href = res.redirect;
     } catch (e) {
       alert('Có lỗi khi nộp khảo sát: '+e.message);
     }

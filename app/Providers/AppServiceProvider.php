@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use App\Services\Ai\AiClientInterface;
+use App\Services\Ai\OpenRouterClient;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(AiClientInterface::class, function(){
+            return new OpenRouterClient();
+        });
     }
 
     /**

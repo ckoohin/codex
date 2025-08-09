@@ -6,6 +6,7 @@
     <h1 class="h4 mb-3">Kết quả tư vấn</h1>
     @if(!$rec)
       <div class="alert alert-warning">Đang phân tích bằng AI... Trang sẽ tự cập nhật.</div>
+      <p class="text-muted small mb-3">Chưa có gợi ý cụ thể. Vui lòng đợi 5–10 giây hoặc đảm bảo tiến trình nền đang chạy: <code>php artisan queue:work</code>.</p>
       <script>
         setTimeout(()=>location.reload(), 3000)
       </script>
@@ -14,12 +15,17 @@
         <div class="card p-3">
           <h2 class="h5 mb-2">Ngành gợi ý hàng đầu</h2>
           <ul class="list-group list-group-flush">
-          @foreach(($rec->ai_raw_json['top_majors'] ?? []) as $m)
+          @forelse(($topMajors ?? []) as $m)
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>{{ $m['major_code'] }}</span>
-              <span class="badge bg-primary">{{ $m['score'] }}%</span>
+              <div>
+                <div class="fw-semibold">{{ $m['name'] }}</div>
+                <div class="small text-muted">Mã: {{ $m['code'] }}</div>
+              </div>
+              @if(!empty($m['score']))<span class="badge bg-primary">{{ $m['score'] }}%</span>@endif
             </li>
-          @endforeach
+          @empty
+            <li class="list-group-item">Chưa có gợi ý cụ thể. Vui lòng đợi thêm hoặc thử lại.</li>
+          @endforelse
           </ul>
         </div>
         @if(!empty($rec->explanation_md))

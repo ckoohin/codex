@@ -15,6 +15,16 @@
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       @auth
       <li class="nav-item"><a class="nav-link" href="{{ route('survey.index') }}">Khảo sát</a></li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="aiMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">AI</a>
+        <ul class="dropdown-menu" aria-labelledby="aiMenu">
+          <li class="dropdown-header">OpenRouter</li>
+          <li><span class="dropdown-item-text small">Model: {{ config('ai.openrouter.model') }}</span></li>
+          <li><span class="dropdown-item-text small">Endpoint: openrouter.ai</span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="https://openrouter.ai" target="_blank">Tài liệu OpenRouter</a></li>
+        </ul>
+      </li>
       @can('admin')
       <li class="nav-item"><a class="nav-link" href="{{ route('admin.majors.index') }}">Quản lý ngành</a></li>
       @endcan

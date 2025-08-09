@@ -11,21 +11,25 @@ class OpenRouterClient implements AiClientInterface
         $baseUrl = config('ai.openrouter.base_url');
         $apiKey = config('ai.openrouter.api_key');
         $model = config('ai.openrouter.model');
-
-        $system = <<<EOT
-        Bạn là cố vấn hướng nghiệp của FPT Polytechnic.
-        - Bạn nhận được dữ liệu khảo sát của một sinh viên và DANH MỤC NGÀNH từ CSDL của trường (majors_catalog: gồm code, name, skills/tags).
-        - Nhiệm vụ: so khớp sở thích/kỹ năng/mục tiêu trong payload với danh mục ngành để chấm điểm mức độ phù hợp.
-        - ƯU TIÊN CHỌN ngành có trong majors_catalog. Không bịa mã ngành mới.
-        - Nếu không đủ dữ liệu, vẫn phải trả về ít nhất 2 ngành phù hợp nhất từ majors_catalog với score thấp hơn.
+        $allowedCodes = $payload['allowed_codes'] ?? [];
+        $allowedCodesStr = implode('", "', $allowedCodes);
+        
+        $system = <<<PROMPT
+        Bạn là cố vấn hướng nghiệp cho sinh viên FPT Polytechnic.
+        Chỉ sử dụng danh mục ngành trong payload (majors_catalog) và chỉ chọn mã trong allowed_codes: ["{$allowedCodesStr}"].
+        Mục tiêu: TRẢ VỀ DUY NHẤT 1 NGÀNH PHÙ HỢP NHẤT.
+        Quy tắc:
+        - Nếu có dữ liệu phù hợp: trả về đúng 1 phần tử trong mảng top_majors (không quá 1).
+        - Nếu không đủ dữ liệu: trả về mảng rỗng [] cho top_majors.
+        - Không thêm thuyết minh dài dòng; đặt explanation_md là chuỗi rỗng "".
+        - Không tạo mã ngành mới ngoài allowed_codes.
 
         JSON OUTPUT BẮT BUỘC (không thêm chữ):
         {
-          "top_majors": [ {"major_code": "TKDH", "score": 0-100}, ... ],
-          "explanation_md": "Markdown ngắn gọn giải thích vì sao phù hợp và gợi ý học những kỹ năng/HP đầu tiên",
-          "score_breakdown": {"TKDH": {"skills_fit":0-100,"interests_fit":0-100}}
+          "top_majors": [{"major_code": "<CODE>", "score": 0-100}],
+          "explanation_md": ""
         }
-        EOT;
+        PROMPT;
 
         $user = [ 'payload' => $payload ];
 
@@ -51,10 +55,22 @@ class OpenRouterClient implements AiClientInterface
 
             $data = $response->json();
             $content = $data['choices'][0]['message']['content'] ?? '{}';
-            $parsed = json_decode($content, true);
-            if (!is_array($parsed)) {
-                \Log::warning('OpenRouter parse failed', ['content'=>$content]);
-                return ['top_majors' => [], 'explanation_md' => ''];
+
+            // Log dữ liệu gốc AI trả về
+            \Log::info('AI raw response', [
+                'data' => $data,
+                'parsed_content' => $content,
+                'payload_sent' => $payload
+            ]);
+
+            return json_decode($content, true) ?: ['top_majors' => [], 'explanation_md' => ''];
+
+            // Filter to allowed_codes if provided
+            if (!empty($payload['allowed_codes']) && !empty($parsed['top_majors'])) {
+                $allowed = array_flip($payload['allowed_codes']);
+                $parsed['top_majors'] = array_values(array_filter($parsed['top_majors'], function($m) use ($allowed){
+                    return isset($allowed[$m['major_code'] ?? '']);
+                }));
             }
             return $parsed;
         } catch (\Throwable $e) {

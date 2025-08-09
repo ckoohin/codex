@@ -15,8 +15,17 @@ class SurveyController extends Controller {
     return view('survey.index', compact('subjects','questions'));
   }
 
+  public function simple() {
+    return view('survey.simple');
+  }
+
   public function submit(Request $request) {
     // Hỗ trợ 2 kiểu payload: dạng responses[] và các trường select đơn giản
+    // Hỗ trợ tên trường 'like' từ form đơn giản (map sang interests)
+    if ($request->filled('like') && !$request->filled('interests')) {
+      $request->merge(['interests' => $request->input('like')]);
+    }
+
     $validated = $request->validate([
       'scores' => ['sometimes','array'],
       'responses' => ['sometimes','array'],

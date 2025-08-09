@@ -4,6 +4,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\ResponseController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\Admin\MajorController as AdminMajorController;
+use App\Http\Controllers\Admin\QuestionController as AdminQuestionController;
+use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,6 +25,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/survey', [SurveyController::class,'index'])->name('survey.index');
+    Route::get('/survey/simple', [SurveyController::class,'simple'])->name('survey.simple');
     Route::post('/survey/draft', [SurveyController::class,'draft'])->name('survey.draft');
     Route::post('/survey/scores', [ResponseController::class,'storeScores'])->name('survey.scores.store');
     Route::post('/survey/responses', [ResponseController::class,'storeResponses'])->name('survey.responses.store');
@@ -32,8 +36,8 @@ Route::middleware('auth')->group(function () {
   Route::middleware(['auth','can:admin'])
     ->prefix('admin')->name('admin.')
     ->group(function () {
-      Route::resource('majors', Admin\MajorController::class);
-      Route::resource('questions', Admin\QuestionController::class);
-      Route::resource('subjects', Admin\SubjectController::class);
+      Route::resource('majors', AdminMajorController::class);
+      Route::resource('questions', AdminQuestionController::class);
+      Route::resource('subjects', AdminSubjectController::class);
   });
 require __DIR__.'/auth.php';

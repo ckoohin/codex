@@ -34,12 +34,25 @@ class MajorController extends Controller
             'code' => ['required','string','max:50','unique:majors,code'],
             'name' => ['required','string','max:255'],
             'description' => ['nullable','string'],
-            'tags' => ['nullable','array'],
+            'tags' => ['nullable'],
             'is_active' => ['sometimes','boolean'],
         ]);
-        $data['tags'] = $data['tags'] ?? [];
-        $data['is_active'] = (bool)($data['is_active'] ?? true);
-        Major::create($data);
+        // Chuẩn hoá tags: cho phép nhập chuỗi phân tách dấu phẩy hoặc mảng
+        $rawTags = $request->input('tags');
+        if (is_string($rawTags)) {
+            $data['tags'] = array_values(array_filter(array_map(fn($t)=>trim($t), explode(',', $rawTags))));
+        } elseif (is_array($rawTags)) {
+            $data['tags'] = array_values(array_filter(array_map(fn($t)=>trim((string)$t), $rawTags)));
+        } else {
+            $data['tags'] = [];
+        }
+        $data['is_active'] = $request->boolean('is_active', true);
+        try {
+            Major::create($data);
+        } catch (\Throwable $e) {
+            \Log::error('Create major failed', ['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['general' => 'Không lưu được ngành. Vui lòng kiểm tra dữ liệu nhập.']);
+        }
         return redirect()->route('admin.majors.index')->with('ok','Đã tạo ngành');
     }
 
@@ -68,12 +81,24 @@ class MajorController extends Controller
             'code' => ['required','string','max:50','unique:majors,code,'.$major->id],
             'name' => ['required','string','max:255'],
             'description' => ['nullable','string'],
-            'tags' => ['nullable','array'],
+            'tags' => ['nullable'],
             'is_active' => ['sometimes','boolean'],
         ]);
-        $data['tags'] = $data['tags'] ?? [];
-        $data['is_active'] = (bool)($data['is_active'] ?? true);
-        $major->update($data);
+        $rawTags = $request->input('tags');
+        if (is_string($rawTags)) {
+            $data['tags'] = array_values(array_filter(array_map(fn($t)=>trim($t), explode(',', $rawTags))));
+        } elseif (is_array($rawTags)) {
+            $data['tags'] = array_values(array_filter(array_map(fn($t)=>trim((string)$t), $rawTags)));
+        } else {
+            $data['tags'] = [];
+        }
+        $data['is_active'] = $request->boolean('is_active', true);
+        try {
+            $major->update($data);
+        } catch (\Throwable $e) {
+            \Log::error('Update major failed', ['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['general' => 'Không cập nhật được ngành.']);
+        }
         return redirect()->route('admin.majors.index')->with('ok','Đã cập nhật ngành');
     }
 

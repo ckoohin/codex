@@ -35,6 +35,7 @@ class AiAnalysisService
             'scores' => $survey->scores()->pluck('score_decimal','subject_id')->toArray(),
             'responses' => $survey->responses()->pluck('answer_json','survey_question_id')->toArray(),
             'majors_catalog' => $majors,
+            'allowed_codes' => array_values(array_map(fn($m) => $m['code'], $majors)),
         ];
         return $this->client->analyze($payload);
     }

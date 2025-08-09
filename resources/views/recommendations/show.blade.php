@@ -6,17 +6,15 @@
     <h1 class="h4 mb-3">Kết quả tư vấn</h1>
     @if(!$rec)
       <div class="alert alert-warning">Đang phân tích bằng AI... Trang sẽ tự cập nhật.</div>
-      <p class="text-muted small mb-3">Chưa có gợi ý cụ thể. Vui lòng đợi 5–10 giây hoặc đảm bảo tiến trình nền đang chạy: <code>php artisan queue:work</code>.</p>
       <script>
         setTimeout(()=>location.reload(), 3000)
       </script>
     @else
       <div class="vstack gap-3">
         <div class="card p-3">
-          <h2 class="h5 mb-2">Ngành gợi ý hàng đầu</h2>
+          <h2 class="h5 mb-2">Ngành gợi ý</h2>
           <ul class="list-group list-group-flush">
           @php
-            // Ưu tiên dùng dữ liệu đã map và lưu trong DB nếu có
             $displayMajors = $topMajors ?? ($rec->top_major_ids_json ?? []);
           @endphp
           @forelse($displayMajors as $m)

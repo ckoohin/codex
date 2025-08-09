@@ -17,19 +17,42 @@ class SurveyController extends Controller {
 
   public function submit(Request $request) {
     $validated = $request->validate([
-      'scores' => ['required','array'],
+      'scores' => ['sometimes','array'],
       'responses' => ['required','array'],
     ]);
     $survey = Survey::create(['user_id'=>auth()->id(),'status'=>'submitted']);
-    // Lưu điểm
-    foreach ($validated['scores'] as $subjectId => $score) {
+    foreach (($validated['scores'] ?? []) as $subjectId => $score) {
       $survey->scores()->updateOrCreate(['subject_id'=>$subjectId],[ 'score_decimal'=>$score ]);
     }
-    // Lưu câu trả lời
     foreach ($validated['responses'] as $questionId => $answer) {
       $survey->responses()->updateOrCreate(['survey_question_id'=>$questionId],[ 'answer_json'=>$answer ]);
     }
     GenerateRecommendationJob::dispatch($survey->id);
-    return response()->json(['redirect'=>route('recommendations.show',$survey)]);
+    return redirect()->route('recommendations.show', $survey);
+  }
+
+  public function draft(Request $request) {
+    $scores = $request->input('scores', []);
+    $responses = $request->input('responses', []);
+
+    $survey = Survey::firstOrCreate([
+      'user_id' => auth()->id(),
+      'status' => 'draft',
+    ]);
+
+    foreach ($scores as $subjectId => $score) {
+      if ($score === '' || $score === null) { continue; }
+      $survey->scores()->updateOrCreate(['subject_id' => $subjectId], [
+        'score_decimal' => $score,
+      ]);
+    }
+    foreach ($responses as $questionId => $answer) {
+      if ($answer === '' || $answer === null) { continue; }
+      $survey->responses()->updateOrCreate(['survey_question_id' => $questionId], [
+        'answer_json' => $answer,
+      ]);
+    }
+
+    return response()->json(['success' => true, 'survey_id' => $survey->id]);
   }
 }

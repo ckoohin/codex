@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/survey', [SurveyController::class,'index'])->name('survey.index');
+    Route::post('/survey/draft', [SurveyController::class,'draft'])->name('survey.draft');
     Route::post('/survey/scores', [ResponseController::class,'storeScores'])->name('survey.scores.store');
     Route::post('/survey/responses', [ResponseController::class,'storeResponses'])->name('survey.responses.store');
     Route::post('/survey/submit', [SurveyController::class,'submit'])->name('survey.submit');

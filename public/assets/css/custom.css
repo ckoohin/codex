@@ -3,4 +3,28 @@
 }
 .markdown-body h1,.markdown-body h2,.markdown-body h3{margin-top:1rem}
 
+/* Survey main section */
+.survey-main{
+  background:#ffffff;
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(15,23,42,.08);
+  padding:24px;
+  max-width:980px;
+  margin:0 auto 24px;
+}
+.survey-main h1{margin:0 0 6px;font-size:20px;color:#0f172a}
+.survey-main .lead{margin:0 0 18px;color:#64748b;font-size:14px}
+.survey-form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.survey-form .field{display:flex;flex-direction:column}
+.survey-form label{font-size:13px;margin-bottom:8px;color:#111827}
+.survey-form select,.survey-form input,.survey-form textarea{height:44px;padding:8px 12px;border-radius:10px;border:1px solid #e6e9ef;background:#fff;font-size:14px}
+.survey-form textarea{min-height:90px;height:auto}
+.survey-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:6px}
+.btn-ghost{background:transparent;border:1px solid #e6e9ef;color:#64748b}
+.btn-primary-soft{background:#1363df;color:#fff;border:0}
+@media (max-width: 720px){
+  .survey-form{grid-template-columns:1fr}
+  .survey-actions{flex-direction:column}
+}
+
 

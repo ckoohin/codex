@@ -1,18 +1,5 @@
 (() => {
-  const api = {
-    post: async (url, data) => {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name=_token]')?.value
-        },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    }
-  };
+  // Không còn dùng AJAX submit; giữ lại util nếu cần
 
   function el(id){ return document.getElementById(id); }
 

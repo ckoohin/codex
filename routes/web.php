@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\ResponseController;
+use App\Http\Controllers\RecommendationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,7 +21,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [SurveyController::class,'index'])->name('survey.index');
+    Route::get('/survey', [SurveyController::class,'index'])->name('survey.index');
     Route::post('/survey/scores', [ResponseController::class,'storeScores'])->name('survey.scores.store');
     Route::post('/survey/responses', [ResponseController::class,'storeResponses'])->name('survey.responses.store');
     Route::post('/survey/submit', [SurveyController::class,'submit'])->name('survey.submit');

@@ -16,16 +16,48 @@ class SurveyController extends Controller {
   }
 
   public function submit(Request $request) {
+    // Hỗ trợ 2 kiểu payload: dạng responses[] và các trường select đơn giản
     $validated = $request->validate([
       'scores' => ['sometimes','array'],
-      'responses' => ['required','array'],
+      'responses' => ['sometimes','array'],
+      'interests' => ['sometimes','string','max:255'],
+      'skills' => ['sometimes','string','max:255'],
+      'subject' => ['sometimes','string','max:255'],
+      'career' => ['sometimes','string','max:255'],
+      'techLove' => ['sometimes','string','max:255'],
+      'creativity' => ['sometimes','string','max:255'],
     ]);
     $survey = Survey::create(['user_id'=>auth()->id(),'status'=>'submitted']);
     foreach (($validated['scores'] ?? []) as $subjectId => $score) {
       $survey->scores()->updateOrCreate(['subject_id'=>$subjectId],[ 'score_decimal'=>$score ]);
     }
-    foreach ($validated['responses'] as $questionId => $answer) {
-      $survey->responses()->updateOrCreate(['survey_question_id'=>$questionId],[ 'answer_json'=>$answer ]);
+    if (!empty($validated['responses'])) {
+      foreach ($validated['responses'] as $questionId => $answer) {
+        $survey->responses()->updateOrCreate(['survey_question_id'=>$questionId],[ 'answer_json'=>$answer ]);
+      }
+    }
+
+    // Map các trường đơn giản thành câu hỏi nếu được gửi từ form mới
+    $simpleFields = [
+      'interests' => ['category' => 'interests', 'text' => 'Sở thích'],
+      'skills' => ['category' => 'skills', 'text' => 'Kỹ năng nổi bật'],
+      'subject' => ['category' => 'interests', 'text' => 'Môn học yêu thích'],
+      'career' => ['category' => 'career', 'text' => 'Định hướng nghề nghiệp'],
+      'techLove' => ['category' => 'traits', 'text' => 'Mức độ yêu thích công nghệ'],
+      'creativity' => ['category' => 'traits', 'text' => 'Mức độ sáng tạo'],
+    ];
+    $order = 1;
+    foreach ($simpleFields as $field => $meta) {
+      $value = $request->input($field);
+      if ($value === null || $value === '') { continue; }
+      $question = SurveyQuestion::firstOrCreate(
+        ['category' => $meta['category'], 'text' => $meta['text']],
+        ['type' => 'single', 'display_order' => $order++]
+      );
+      $survey->responses()->updateOrCreate(
+        ['survey_question_id' => $question->id],
+        ['answer_json' => $value]
+      );
     }
     GenerateRecommendationJob::dispatch($survey->id);
     return redirect()->route('recommendations.show', $survey);
@@ -51,6 +83,29 @@ class SurveyController extends Controller {
       $survey->responses()->updateOrCreate(['survey_question_id' => $questionId], [
         'answer_json' => $answer,
       ]);
+    }
+
+    // Lưu nháp cho các trường đơn giản
+    $simpleFields = [
+      'interests' => ['category' => 'interests', 'text' => 'Sở thích'],
+      'skills' => ['category' => 'skills', 'text' => 'Kỹ năng nổi bật'],
+      'subject' => ['category' => 'interests', 'text' => 'Môn học yêu thích'],
+      'career' => ['category' => 'career', 'text' => 'Định hướng nghề nghiệp'],
+      'techLove' => ['category' => 'traits', 'text' => 'Mức độ yêu thích công nghệ'],
+      'creativity' => ['category' => 'traits', 'text' => 'Mức độ sáng tạo'],
+    ];
+    $order = 1;
+    foreach ($simpleFields as $field => $meta) {
+      $value = $request->input($field);
+      if ($value === null || $value === '') { continue; }
+      $question = SurveyQuestion::firstOrCreate(
+        ['category' => $meta['category'], 'text' => $meta['text']],
+        ['type' => 'single', 'display_order' => $order++]
+      );
+      $survey->responses()->updateOrCreate(
+        ['survey_question_id' => $question->id],
+        ['answer_json' => $value]
+      );
     }
 
     return response()->json(['success' => true, 'survey_id' => $survey->id]);
